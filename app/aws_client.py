@@ -1,4 +1,5 @@
 from functools import lru_cache
+import os
 
 import boto3
 from botocore.client import BaseClient
@@ -9,6 +10,9 @@ from app.config import get_settings
 @lru_cache
 def get_bedrock_client() -> BaseClient:
     settings = get_settings()
+
+    if "AWS_PROFILE" in os.environ and not str(os.environ.get("AWS_PROFILE", "")).strip():
+        del os.environ["AWS_PROFILE"]
 
     session_kwargs: dict[str, str] = {}
     if settings.aws_profile and str(settings.aws_profile).strip():

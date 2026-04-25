@@ -1,4 +1,4 @@
-from botocore.exceptions import ClientError
+from botocore.exceptions import ClientError, ProfileNotFound
 
 from app.aws_client import get_bedrock_client
 from app.config import get_settings
@@ -29,7 +29,6 @@ def _map_bedrock_error(error: ClientError) -> AppError:
 
 
 def run_rag_query(prompt: str, session_id: str | None = None) -> QueryResponse:
-    client = get_bedrock_client()
     settings = get_settings()
 
     request_payload = {
@@ -46,9 +45,16 @@ def run_rag_query(prompt: str, session_id: str | None = None) -> QueryResponse:
         request_payload["sessionId"] = session_id
 
     try:
+        client = get_bedrock_client()
         response = client.retrieve_and_generate(**request_payload)
     except ClientError as error:
         raise _map_bedrock_error(error) from error
+    except ProfileNotFound as error:
+        raise AppError(
+            "AWS profile configuration error",
+            detail=str(error),
+            status_code=500,
+        ) from error
     except Exception as error:  # pragma: no cover - defensive fallback
         raise AppError("Unexpected error querying Bedrock", detail=str(error), status_code=500) from error
 
