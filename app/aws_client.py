@@ -11,8 +11,8 @@ def get_bedrock_client() -> BaseClient:
     settings = get_settings()
 
     session_kwargs: dict[str, str] = {}
-    if settings.aws_profile:
-        session_kwargs["profile_name"] = settings.aws_profile
+    if settings.aws_profile and str(settings.aws_profile).strip():
+        session_kwargs["profile_name"] = str(settings.aws_profile).strip()
     if settings.aws_access_key_id and settings.aws_secret_access_key:
         session_kwargs["aws_access_key_id"] = settings.aws_access_key_id
         session_kwargs["aws_secret_access_key"] = settings.aws_secret_access_key

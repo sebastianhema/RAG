@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import Any
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -33,6 +34,14 @@ class Settings(BaseSettings):
         if not value:
             return ["*"]
         return [origin.strip() for origin in value.split(",") if origin.strip()]
+
+    def model_post_init(self, __context: Any) -> None:  # type: ignore[override]
+        if self.aws_profile is not None and not str(self.aws_profile).strip():
+            self.aws_profile = None
+        if self.aws_access_key_id is not None and not str(self.aws_access_key_id).strip():
+            self.aws_access_key_id = None
+        if self.aws_secret_access_key is not None and not str(self.aws_secret_access_key).strip():
+            self.aws_secret_access_key = None
 
 
 @lru_cache
